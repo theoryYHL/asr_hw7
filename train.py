@@ -92,13 +92,20 @@ def make_int(chartarget, char_dictionary):
 # 모든 phn file을 이용해서 one_hot 인코딩을 해주는 함수
 def alltargetread(frame_lengths, char_dictionary):
     trans_lines = open("train_wsj0.trans").read().splitlines()
-    target_num = len(trans_lines)
+    data_path_list = open("train_wsj0.list").read().splitlines()
+    target_num = len(data_path_list)
     train_target = [0] * target_num
-    for i,line in enumerate(trans_lines):
+    target_dictionary = {}
+    for line in trans_lines:
         chartarget = line[9:]
         inttarget = make_int(chartarget, char_dictionary)
-        train_target[i] = inttarget
-        print (line[:9])
+        id = line[:8]
+        target_dictionary[id] = inttarget
+        print (chartarget)
+    for i,path in enumerate(data_path_list):
+        id = path[19:27]
+        train_target[i] = target_dictionary[id]
+        print(path)
     return train_target
 
 def get_batch():
@@ -115,10 +122,9 @@ def sparse_tensor_materials(x):
   x_val = []
   for batch_i, batch in enumerate(x):
     for time, val in enumerate(batch):
-      if (val != 29):
-        x_ix.append([batch_i, time])
-        x_val.append(val)
-  x_shape = [len(x), np.asarray(x_ix).max(0)[1]+2]
+      x_ix.append([batch_i, time])
+      x_val.append(val)
+  x_shape = [len(x), np.asarray(x_ix).max(0)[1]+1]
 
   return x_ix, x_val, x_shape
 
@@ -127,11 +133,10 @@ def ctc_input(train_target, char_dictionary):
     for single_target in train_target:
         single_labels = []
         for label in single_target:
-            single_labels.append(29)
             single_labels.append(label)
-        single_labels.append(29)
         ctc_labels.append(single_labels)
     return ctc_labels
+#######
 
 def read_ctc_output(greedy, id_list):
     ctc_labels = []
@@ -146,7 +151,7 @@ def read_ctc_output(greedy, id_list):
 
 if __name__ == "__main__":
     charsize = 30 # alpahbet 26 + " "  ","  "." 3 + <blank> 1
-    batch_size = 2
+    batch_size = 4
     frame_length = 1000
 
     # char_dictionary: 각 char이 몇 번째인지. char_dictionary["A"] = 0
@@ -185,15 +190,17 @@ if __name__ == "__main__":
         f_target.close()
 
     ctc_target = ctc_input(train_target,char_dictionary)
+    ctc_frame = [len(x) for x in ctc_target]
+    zero_finder = []
+    for i in range(len(ctc_frame)):
+        if(ctc_frame[i]==0):
+            zero_finder.append(i)
+    zero_finder.reverse()
+    for index in zero_finder:
+        ctc_target.pop(index)
+        train_data.pop(index)
+        train_frame.pop(index)
     batch_indices, batch_values, batch_shape = sparse_tensor_materials(ctc_target[0:2])
-    train_data = train_data[0:2]
-    train_frame = train_frame[0:2]
-    ctc_target = ctc_target[0:2]
-    combines = list(zip(train_data, train_frame, ctc_target))
-    random.shuffle(combines)
-    train_data = [x[0] for x in combines]
-    train_frame = [x[1] for x in combines]
-    ctc_target = [x[2] for x in combines]
 
     data_dim = 123
     # input과 target label
@@ -220,7 +227,7 @@ if __name__ == "__main__":
         # 일단 모든 트레이닝 데이터에 대해 한 번씩만 학습을 해봄
         # batch 는 현재 1
         s = 0
-        for i in range(100):
+        for i in range(10):
             if batch_size is not 1:
                 s += batch_size
                 e = s + batch_size

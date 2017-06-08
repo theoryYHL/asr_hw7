@@ -57,8 +57,6 @@ class MODEL(object):
         Cell = LayerNormBasicLSTMCell
         cells_fw = []
         cells_bw = []
-        cells_fw_dropout = []
-        cells_bw_dropout = []
         with tf.variable_scope(self.name):
             for _ in range(num_layer):
                 cell_fw = Cell(hidden_dim,dropout_keep_prob=keep_prob)
@@ -123,6 +121,8 @@ class MODEL(object):
 
         return h4, s1, cross_entropy
         """
+
+        self.params = tf.trainable_variables()
 
         return loss, labels ,greedy
 
