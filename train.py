@@ -101,7 +101,7 @@ def alltargetread(frame_lengths, char_dictionary):
         inttarget = make_int(chartarget, char_dictionary)
         id = line[:8]
         target_dictionary[id] = inttarget
-        print (chartarget)
+        print (id)
     for i,path in enumerate(data_path_list):
         id = path[19:27]
         train_target[i] = target_dictionary[id]
@@ -151,8 +151,8 @@ def read_ctc_output(greedy, id_list):
 
 if __name__ == "__main__":
     charsize = 30 # alpahbet 26 + " "  ","  "." 3 + <blank> 1
-    batch_size = 4
-    frame_length = 1000
+    batch_size = 16
+    frame_length = 4000
 
     # char_dictionary: 각 char이 몇 번째인지. char_dictionary["A"] = 0
     # id_list: 몇 번째 char이 무엇인지. id_list[0] = "A"
@@ -227,7 +227,7 @@ if __name__ == "__main__":
         # 일단 모든 트레이닝 데이터에 대해 한 번씩만 학습을 해봄
         # batch 는 현재 1
         s = 0
-        for i in range(10):
+        for i in range(2):
             if batch_size is not 1:
                 s += batch_size
                 e = s + batch_size
