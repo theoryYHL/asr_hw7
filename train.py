@@ -151,7 +151,7 @@ def read_ctc_output(greedy, id_list):
 
 if __name__ == "__main__":
     charsize = 30 # alpahbet 26 + " "  ","  "." 3 + <blank> 1
-    batch_size = 16
+    batch_size = 8
     frame_length = 4000
 
     # char_dictionary: 각 char이 몇 번째인지. char_dictionary["A"] = 0
@@ -227,19 +227,15 @@ if __name__ == "__main__":
         # 일단 모든 트레이닝 데이터에 대해 한 번씩만 학습을 해봄
         # batch 는 현재 1
         s = 0
-        for i in range(2):
+        for i in range(1000):
             if batch_size is not 1:
                 s += batch_size
                 e = s + batch_size
                 if (e >= data_num):
                     s = 0
                     e = batch_size
-                    combines = list(zip(train_data, train_frame, ctc_target))
-                    random.shuffle(combines)
-                    train_data = [x[0] for x in combines]
-                    train_frame = [x[1] for x in combines]
-                    ctc_target = [x[2] for x in combines]
                 batch_len = np.asarray(train_frame[s:e])
+                print(batch_len)
 
                 sparse_tensor_materials(train_data[s:e])
                 max_len = batch_len.max()
@@ -254,6 +250,12 @@ if __name__ == "__main__":
                 batch_X = np.asarray([train_data[i%2]])
                 batch_len = np.asarray([train_frame[i%2]])
                 batch_indices, batch_values, batch_shape = sparse_tensor_materials([ctc_target[i%2]])
+            
+            np.asarray(batch_X)
+            np.asarray(batch_indices)
+            np.asarray(batch_values)
+            np.asarray(batch_shape)
+            np.asarray(batch_len)
             _, _loss, _y, _labels = training_sess.run([train_step, loss, greedy, labels],
                 feed_dict={input_data: batch_X, input_indices: batch_indices, input_values: batch_values,
                 input_shape:batch_shape , input_len: batch_len})
