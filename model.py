@@ -101,6 +101,7 @@ class MODEL(object):
         labels = tf.SparseTensor(indices_,values_,shape_)
         loss = tf.nn.ctc_loss(labels, output,seq_len_)
         greedy = tf.nn.ctc_greedy_decoder(output,seq_len_)
+        beam = tf.nn.ctc_beam_search_decoder(output,seq_len_)
         """
         # Compute cross entropy for each frame
         cross_entropy = target_y * tf.log(output)
@@ -124,7 +125,7 @@ class MODEL(object):
 
         self.params = tf.trainable_variables()
 
-        return loss, labels ,greedy, output
+        return loss, labels ,beam, output
 
     # zero_state 출력 함수
     def zero_state(self):
