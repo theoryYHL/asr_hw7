@@ -227,7 +227,7 @@ if __name__ == "__main__":
         # 일단 모든 트레이닝 데이터에 대해 한 번씩만 학습을 해봄
         # batch 는 현재 1
         s = 0
-        for i in range(1000):
+        for i in range(6000):
             if batch_size is not 1:
                 s += batch_size
                 e = s + batch_size
