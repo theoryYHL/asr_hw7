@@ -124,7 +124,7 @@ class MODEL(object):
 
         self.params = tf.trainable_variables()
 
-        return loss, labels ,greedy
+        return loss, labels ,greedy, output
 
     # zero_state 출력 함수
     def zero_state(self):
